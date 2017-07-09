@@ -1,0 +1,3 @@
+timestamp,ticker,action,quantity,exchange,price,commission
+2002-02-08 00:00:00,AAPL,BOT,100,ARCA,24.03,1.0
+2002-08-14 00:00:00,AAPL,SLD,100,ARCA,15.17,1.0
