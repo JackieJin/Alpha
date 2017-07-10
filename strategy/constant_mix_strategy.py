@@ -10,24 +10,23 @@ from qstrader.price_handler.quandl_data import QuandlPriceHandler
 import datetime
 
 class ConstantMixStrategy(AbstractStrategy):
-    def __init__(
-      self, tickers_and_weights,
-            events_queue,
-    ):
+    def __init__(self, tickers_and_weights):
         self.tickers_and_weights = tickers_and_weights
-        self.events_queue = events_queue
+
+    def initialize(self, portfolio_handler):
+        self.portfolio_handler = portfolio_handler
 
     def calculate_signals(self, event):
-        if (
-            event.type == EventType.BAR and
-            event.ticker in self.tickers_and_weights and
-            date_utils._end_of_month(event.time)
-        ):
+        if self._is_rebalance(event.time):
             ticker = event.ticker
-            if self.portfolio_handler.get_current_weight(ticker) !=\
-                self.tickers_and_weights[ticker]:
-                twe = TargetWeightEvent(ticker, self.tickers_and_weights[ticker])
-                self.events_queue.put(twe)
+            twe = TargetWeightEvent(ticker, self.tickers_and_weights)
+            self.portfolio_handler.events_queue.put(twe)
+
+    def _is_rebalance(self, time):
+        return date_utils._end_of_month(time)
+
+
+
 
 
 def run(config, testing, tickers, ticker_weights):

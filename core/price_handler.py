@@ -68,6 +68,11 @@ class PriceHandler(object):
         self.subscribe_tickers()
 
         return event
+    def continue_backtest(self):
+        flag = True
+        if self.curr_idx > len(self.timestamp):
+            flag = False
+        return flag
 
 
 if __name__ == "__main__":

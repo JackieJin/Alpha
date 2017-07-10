@@ -147,3 +147,13 @@ class Portfolio(object):
             pt = self.positions[ticker]
             wt[ticker] = pt.market_value // self.cur_cash
         return wt
+
+    def get_current_weight2(self, ticker):
+        if ticker not in self.positions:
+            current_weight = 0
+        else:
+            current_quantity = self.positions[ticker].quantity
+            price = self.price_handler.tickers[ticker]["adj_close"]
+            equity = self.equity
+            current_weight = current_quantity * price / equity
+        return current_weight

@@ -1,7 +1,9 @@
 from qstrader.order.suggested import SuggestedOrder
 
 from core.portfolio import Portfolio
-
+from datetime import datetime
+from qstrader.compat import queue
+from event import EventType
 
 class PortfolioHandler(object):
     def __init__(
@@ -34,6 +36,10 @@ class PortfolioHandler(object):
         self.portfolio      = Portfolio(price_handler, initial_cash)
         self.strategy       = strategy
         self.cur_time       = None
+
+    def _initilizeParameters(self):
+        self.strategy.initialize(self)
+        self.position_sizer.initialize(self)
 
     def _create_order_from_signal(self, signal_event):
         """
@@ -157,8 +163,77 @@ class PortfolioHandler(object):
         event = self.strategy.calculate_signals(event)
         self.strategy.save_signals(event)
 
-    def get_current_weight(self):
-        return self.portfolio.get_current_weight
+    def get_current_weights(self, ticker=None):
+        current_weight = self.portfolio.get_current_weight
+        if ticker is None:
+            return current_weight
+        else:
+            return current_weight[ticker]
+
 
     def stream_next(self):
         return self.price_handler.stream_next
+
+
+    def _continue_loop_condition(self):
+        if self.session_type == "backtest":
+            return self.price_handler.continue_backtest
+        else:
+            return datetime.now() < self.end_session_time
+
+    def _run_session(self):
+        """
+        Carries out an infinite while loop that polls the
+        events queue and directs each event to either the
+        strategy component of the execution handler. The
+        loop continue until the event queue has been
+        emptied.
+        """
+        if self.session_type == "backtest":
+            print("Running Backtest...")
+        else:
+            print("Running Realtime Session until %s" % self.end_session_time)
+
+        while self._continue_loop_condition():
+            try:
+                event = self.events_queue.get(False)
+            except queue.Empty:
+                self.stream_next()
+            else:
+                if event is not None:
+                    if (
+                        event.type == EventType.TICK or
+                        event.type == EventType.BAR  or
+                        event.type == EventType.TIME
+                    ):
+                        self.calculate_signals(event)
+                    elif event.type == EventType.SIGNAL:
+                        self.on_signal(event)
+                    elif event.type == EventType.TARGETWEIGHT:
+                        self.on_target_weight(event)
+                    elif event.type == EventType.ORDER:
+                        self.execution_handler.execute_order(event)
+                    elif event.type == EventType.FILL:
+                        self.on_fill(event)
+                    elif event.type == EventType.RECON:
+                        self.update_portfolio_value(event)
+                    else:
+                        raise NotImplemented("Unsupported event.type '%s'" % event.type)
+
+    def start_trading(self, testing=False):
+        """
+        Runs either a backtest or live session, and outputs performance when complete.
+        """
+        self._run_session()
+        results = self.statistics.get_results()
+        print("---------------------------------")
+        print("Backtest complete.")
+        print("Sharpe Ratio: %0.2f" % results["sharpe"])
+        print(
+            "Max Drawdown: %0.2f%%" % (
+                results["max_drawdown_pct"] * 100.0
+            )
+        )
+        if not testing:
+            self.statistics.plot_results()
+        return results

@@ -15,9 +15,9 @@ class Event(object):
 
 
 class TimeEvent(Event):
-    def __init__(self,time):
-        self.time = time
+    def __init__(self, time):
         self.type = EventType.TIME
+        self.time = time
 
 class SignalEvent(Event):
     """
@@ -43,10 +43,10 @@ class SignalEvent(Event):
 
 
 class TargetWeightEvent(Event):
-    def __init__(self, ticker, suggested_weight = None):
+    def __init__(self, suggested_weights):
         self.type   = EventType.TARGETWEIGHT
-        self.ticker = ticker
-        self.suggested_weight = suggested_weight
+        self.suggested_weights = suggested_weights
+
 
 class OrderEvent(Event):
     """
