@@ -1,6 +1,7 @@
-from Quandl import Quandl
-from base_api import AbstractData
 import pandas as pd
+from Quandl import Quandl
+
+from data.base_api import AbstractData
 
 auth_tok = '7rgk5sisbRwpDCDtUx9x'
 vendor   = 'WIKI'

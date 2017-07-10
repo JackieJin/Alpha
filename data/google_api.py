@@ -1,7 +1,8 @@
-from pandas_datareader import data
-import fix_yahoo_finance
-from base_api import AbstractData
 import pandas as pd
+from pandas_datareader import data
+
+from data.base_api import AbstractData
+
 
 class GoogleData(AbstractData):
 

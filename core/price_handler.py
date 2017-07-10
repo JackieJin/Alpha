@@ -1,8 +1,11 @@
-import pandas as pd
-from event import TimeEvent
-from get_data import get_data_from_db
 import datetime
-from data_factory import StockData
+
+import pandas as pd
+
+from data.data_factory import StockData
+from data.get_data import get_data_from_db
+from event import TimeEvent
+
 
 class PriceHandler(object):
     def __init__(self, data_symbols, init_tickers = None, start_date = None, end_date= None, freq = 'D'):

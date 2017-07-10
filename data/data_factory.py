@@ -1,9 +1,11 @@
 
-from yahoo_api import YahooData
-from google_api import GoogleData
-from quandl_api import QuandlData
-from utils import fillnan
 import datetime
+
+from google_api import GoogleData
+
+from data.quandl_api import QuandlData
+from data.yahoo_api import YahooData
+from utils import fillnan
 
 
 class DataFactory:

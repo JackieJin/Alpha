@@ -1,5 +1,6 @@
 from qstrader.order.suggested import SuggestedOrder
-from qstrader.portfolio import Portfolio
+
+from core.portfolio import Portfolio
 
 
 class PortfolioHandler(object):

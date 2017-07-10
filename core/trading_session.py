@@ -19,11 +19,11 @@ class TradingSession(object):
     """
     def __init__(
         self, config, tickers,
-        equity, start_date, end_date, events_queue,
+        equity, start_date, end_date,
         session_type="backtest", end_session_time=None,
         portfolio_handler=None,
-        compliance=None, position_sizer=None,
-        execution_handler=None, risk_manager=None,
+        compliance=None,
+        execution_handler=None,
         title=None, benchmark=None
     ):
         """
@@ -38,8 +38,6 @@ class TradingSession(object):
         self.portfolio_handler = portfolio_handler
         self.compliance = compliance
         self.execution_handler = execution_handler
-        self.position_sizer = position_sizer
-        self.risk_manager = risk_manager
         self.title = title
         self.benchmark = benchmark
         self.session_type = session_type
