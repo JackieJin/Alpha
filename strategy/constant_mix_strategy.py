@@ -8,6 +8,7 @@ from qstrader.compat import queue
 from qstrader.trading_session import TradingSession
 from qstrader.price_handler.quandl_data import QuandlPriceHandler
 import datetime
+from suggested import SuggestedWeight
 
 class ConstantMixStrategy(AbstractStrategy):
     def __init__(self, tickers_and_weights):
@@ -18,8 +19,9 @@ class ConstantMixStrategy(AbstractStrategy):
 
     def calculate_signals(self, event):
         if self._is_rebalance(event.time):
-            ticker = event.ticker
-            twe = TargetWeightEvent(ticker, self.tickers_and_weights)
+            twe = TargetWeightEvent()
+            for ticker in self.tickers_and_weights:
+                twe.add(SuggestedWeight(ticker,self.tickers_and_weights[ticker]))
             self.portfolio_handler.events_queue.put(twe)
 
     def _is_rebalance(self, time):
