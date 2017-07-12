@@ -73,45 +73,6 @@ class SuggestedOrderEvent(Event):
 
 
 
-class FillEvent(Event):
-    """
-    Encapsulates the notion of a filled order, as returned
-    from a brokerage. Stores the quantity of an instrument
-    actually filled and at what price. In addition, stores
-    the commission of the trade from the brokerage.
-
-    TODO: Currently does not support filling positions at
-    different prices. This will be simulated by averaging
-    the cost.
-    """
-
-    def __init__(
-        self, timestamp, ticker,
-        action, quantity,
-        exchange, price,
-        commission
-    ):
-        """
-        Initialises the FillEvent object.
-
-        timestamp - The timestamp when the order was filled.
-        ticker - The ticker symbol, e.g. 'GOOG'.
-        action - 'BOT' (for long) or 'SLD' (for short).
-        quantity - The filled quantity.
-        exchange - The exchange where the order was filled.
-        price - The price at which the trade was filled
-        commission - The brokerage commission for carrying out the trade.
-        """
-        self.type = EventType.FILL
-        self.timestamp = timestamp
-        self.ticker = ticker
-        self.action = action
-        self.quantity = quantity
-        self.exchange = exchange
-        self.price = price
-        self.commission = commission
-
-
 class SentimentEvent(Event):
     """
     Handles the event of streaming a "Sentiment" value associated
