@@ -4,7 +4,7 @@ import pandas as pd
 
 from data.data_factory import StockData
 from data.get_data import get_data_from_db
-from event import TimeEvent
+from events import TimeEvents
 
 
 class PriceHandler(object):
@@ -64,7 +64,7 @@ class PriceHandler(object):
 
 
     def stream_next(self):
-        event = TimeEvent(self.timestamp[self.curr_idx])
+        event = TimeEvents(self.timestamp[self.curr_idx])
         self.curr_idx += 1
         self.subscribe_tickers()
 

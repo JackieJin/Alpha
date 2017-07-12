@@ -1,4 +1,5 @@
-from event import EventType, FillEvent
+from events import EventType, FillEvents
+from suggested import FilledOrder
 
 class SimulationExecutionHandler(object):
     """
@@ -38,7 +39,7 @@ class SimulationExecutionHandler(object):
         )
         return commission
 
-    def execute_order(self, event):
+    def execute_order(self, suggested_orders):
         """
         Converts OrderEvents into FillEvents "naively",
         i.e. without any latency, slippage or fill ratio problems.
@@ -46,13 +47,15 @@ class SimulationExecutionHandler(object):
         Parameters:
         event - An Event object with order information.
         """
-        if event.type == EventType.ORDER:
+        if suggested_orders.type == EventType.ORDER:
             # Obtain values from the OrderEvent
-            for ticker in event.suggested_quantity:
-                timestamp = self.portfolio_handler.get_last_timestamp(event.ticker)
-                ticker = event.ticker
-                action = event.action
-                quantity = event.quantity
+            filled_orders = FillEvents()
+            for ticker in suggested_orders.pool:
+                order  = self.portfolio_handler.get_last_timestamp(suggested_orders.pool[ticker])
+                timestamp = order.time
+                ticker = order.ticker
+                action = order.action
+                quantity = order.quantity
 
                 # Obtain the fill price
                 # if self.portfolio_handler.istick():
@@ -70,13 +73,14 @@ class SimulationExecutionHandler(object):
                 commission = self.calculate_commission(quantity, fill_price)
 
                 # Create the FillEvent and place on the events queue
-                fill_event = FillEvent(
+                fill_order = FilledOrder(
                     timestamp, ticker,
                     action, quantity,
                     exchange, fill_price,
                     commission
                 )
-            self.events_queue.put(fill_event)
+                filled_orders.add(fill_order)
+            self.events_queue.put(filled_orders)
 
             if self.compliance is not None:
-                self.compliance.record_trade(fill_event)
+                self.compliance.record_trade(filled_orders)

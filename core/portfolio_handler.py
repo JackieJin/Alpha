@@ -3,7 +3,7 @@ from qstrader.order.suggested import SuggestedOrder
 from core.portfolio import Portfolio
 from datetime import datetime
 from qstrader.compat import queue
-from event import EventType
+from events import EventType
 
 class PortfolioHandler(object):
     def __init__(
@@ -71,7 +71,7 @@ class PortfolioHandler(object):
         for order_event in order_list:
             self.events_queue.put(order_event)
 
-    def _convert_fill_to_portfolio_update(self, fill_event):
+    def _convert_fill_to_portfolio_update(self, fill_events):
         """
         Upon receipt of a FillEvent, the PortfolioHandler converts
         the event into a transaction that gets stored in the Portfolio
@@ -83,16 +83,18 @@ class PortfolioHandler(object):
         modifying how the ExecutionHandler object handles slippage,
         transaction costs, liquidity and market impact.
         """
-        action = fill_event.action
-        ticker = fill_event.ticker
-        quantity = fill_event.quantity
-        price = fill_event.price
-        commission = fill_event.commission
-        # Create or modify the position from the fill info
-        self.portfolio.transact_position(
-            action, ticker, quantity,
-            price, commission
-        )
+        for ticker in fill_events.pool:
+            fill_event = fill_events.get(ticker)
+            action = fill_event.action
+            ticker = fill_event.ticker
+            quantity = fill_event.quantity
+            price = fill_event.price
+            commission = fill_event.commission
+            # Create or modify the position from the fill info
+            self.portfolio.transact_position(
+                action, ticker, quantity,
+                price, commission
+            )
 
     def on_signal(self, signal_event):
         """
@@ -118,7 +120,7 @@ class PortfolioHandler(object):
         # Place orders onto events queue
         self._place_orders_onto_queue(order_events)
 
-    def on_target_weight(self,  target_weight_event):
+    def on_target_weight(self,  target_weight_events):
         """
         This is called by the backtester or live trading architecture
         to form the initial orders from the SignalEvent.
@@ -130,7 +132,7 @@ class PortfolioHandler(object):
         full OrderEvent objects and sent back to the events queue.
         """
         order_events = self.position_sizer.size_order(
-            self.portfolio, target_weight_event
+            self.portfolio, target_weight_events
         )
 
         # Refine or eliminate the order via the risk manager overlay

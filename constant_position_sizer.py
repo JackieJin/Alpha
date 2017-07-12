@@ -1,6 +1,6 @@
 from math import floor
 
-from event import EventType, SuggestedOrderEvent
+from events import EventType, SuggestedOrderEvents
 from qstrader.order.suggested import SuggestedOrder
 
 
@@ -14,11 +14,12 @@ class ConstantPositionSizer(object):
     def initialize(self, portfolio_handler):
         self.portfolio_handler = portfolio_handler
 
-    def size_order(self, target_weight_event):
-        initial_order = SuggestedOrderEvent()
-        if target_weight_event.type == EventType.TARGETWEIGHT:
+    def size_order(self, target_weight_events):
+        initial_order = SuggestedOrderEvents()
+
+        if target_weight_events.type == EventType.TARGETWEIGHT:
             current_weights      = self.portfolio_handler.get_current_weights()
-            suggested_weights    = target_weight_event.suggested_weights
+            suggested_weights    = {ticker: suggested_weight.quantity for (ticker, suggested_weight) in target_weight_events.pool.items()}
 
             for ticker in suggested_weights:
                 if ticker in current_weights:
@@ -33,7 +34,7 @@ class ConstantPositionSizer(object):
                     initial_order.add(order)
             return initial_order
         else:
-            raise NotImplemented("Unsupported event.type '%s' in size_order" % target_weight_event.type)
+            raise NotImplemented("Unsupported event.type '%s' in size_order" % target_weight_events.type)
 
 
     def _get_quantity_from_weight(self, ticker, weight):
