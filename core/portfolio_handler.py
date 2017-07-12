@@ -8,7 +8,7 @@ from event import EventType
 class PortfolioHandler(object):
     def __init__(
         self, initial_cash, events_queue,
-        price_handler, position_sizer, risk_manager, strategy
+        price_handler, position_sizer, risk_manager, excution_handler, strategy
     ):
         """
         The PortfolioHandler is designed to interact with the
@@ -33,6 +33,7 @@ class PortfolioHandler(object):
         self.price_handler  = price_handler
         self.position_sizer = position_sizer
         self.risk_manager   = risk_manager
+        self.excution_handler = excution_handler
         self.portfolio      = Portfolio(price_handler, initial_cash)
         self.strategy       = strategy
         self.cur_time       = None
@@ -40,6 +41,7 @@ class PortfolioHandler(object):
     def _initilizeParameters(self):
         self.strategy.initialize(self)
         self.position_sizer.initialize(self)
+        self.excution_handler.initialize(self)
 
     def _create_order_from_signal(self, signal_event):
         """
@@ -127,14 +129,14 @@ class PortfolioHandler(object):
         Once received from the RiskManager they are converted into
         full OrderEvent objects and sent back to the events queue.
         """
-        sized_order = self.position_sizer.size_order(
+        order_events = self.position_sizer.size_order(
             self.portfolio, target_weight_event
         )
 
         # Refine or eliminate the order via the risk manager overlay
-        order_events = self.risk_manager.refine_orders(
-            self.portfolio, sized_order
-        )
+        # order_events = self.risk_manager.refine_orders(
+        #     self.portfolio, sized_order
+        # )
         # Place orders onto events queue
         self._place_orders_onto_queue(order_events)
 
@@ -171,8 +173,18 @@ class PortfolioHandler(object):
             return current_weight[ticker]
 
 
+    def get_last_timestamp(self, ticker):
+        return self.price_handler.get_last_timestamp(ticker)
+
+
     def stream_next(self):
         return self.price_handler.stream_next
+
+    def get_best_bid_ask(self, ticker):
+        return self.price_handler.get_best_bid_ask(ticker)
+
+    def get_last_close(self, ticker):
+        return self.price_handler.get_last_close(ticker)
 
 
     def _continue_loop_condition(self):

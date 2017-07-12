@@ -1,6 +1,7 @@
 from enum import Enum
+from suggested import SuggestedOrder
 
-EventType = Enum("EventType", "TICK BAR SIGNAL ORDER FILL SENTIMENT TARGETWEIGHT TIME RECON")
+EventType = Enum("EventType", "TICK BAR SIGNAL ORDER FILL SENTIMENT TARGETWEIGHT TIME RECON SUGGESTEDORDER")
 
 class Event(object):
     """
@@ -42,41 +43,34 @@ class SignalEvent(Event):
         self.suggested_quantity = suggested_quantity
 
 
-class TargetWeightEvent(Event):
-    def __init__(self, suggested_weights):
-        self.type   = EventType.TARGETWEIGHT
-        self.suggested_weights = suggested_weights
+class SuggestedWeightEvent(Event):
+    def __init__(self):
+        self.type = EventType.TARGETWEIGHT
+        self.suggested_weights = {}
 
+    def get(self, ticker):
+        weight = self.suggested_weights[ticker]
+        return weight
 
-class OrderEvent(Event):
-    """
-    Handles the event of sending an Order to an execution system.
-    The order contains a ticker (e.g. GOOG), action (BOT or SLD)
-    and quantity.
-    """
-    def __init__(self, ticker, action, quantity):
-        """
-        Initialises the OrderEvent.
+    def add(self, weight):
+        self.suggested_weights[weight.ticker] = weight.quantity
 
-        Parameters:
-        ticker - The ticker symbol, e.g. 'GOOG'.
-        action - 'BOT' (for long) or 'SLD' (for short).
-        quantity - The quantity of shares to transact.
-        """
-        self.type = EventType.ORDER
-        self.ticker = ticker
-        self.action = action
-        self.quantity = quantity
+class SuggestedOrderEvent(Event):
+    def __init__(self):
+        self.type   = EventType.ORDER
+        self.suggested_quantity = {}
+        self.suggested_action   = {}
 
-    def print_order(self):
-        """
-        Outputs the values within the OrderEvent.
-        """
-        print(
-            "Order: Ticker=%s, Action=%s, Quantity=%s" % (
-                self.ticker, self.action, self.quantity
-            )
-        )
+    def get(self, ticker):
+        action      = self.suggested_action[ticker]
+        quantity    = self.suggested_quantity[ticker]
+        s = SuggestedOrder(ticker, action, quantity)
+        return s
+
+    def add(self, order):
+        self.suggested_quantity[order.ticker] = order.quantity
+        self.suggested_action[order.ticker]  = order.action
+
 
 
 class FillEvent(Event):

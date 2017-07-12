@@ -62,6 +62,7 @@ class PriceHandler(object):
     def _get_initial_data(self):
        self.data = get_data_from_db(self.data, self.data_symbols, self.start_date, self.end_date)
 
+
     def stream_next(self):
         event = TimeEvent(self.timestamp[self.curr_idx])
         self.curr_idx += 1
