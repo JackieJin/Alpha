@@ -1,7 +1,6 @@
 from math import floor
-
 from event import EventType, SuggestedOrderEvent
-from qstrader.order.suggested import SuggestedOrder
+from suggested import SuggestedOrder
 
 
 
