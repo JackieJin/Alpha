@@ -129,9 +129,9 @@ class TradingSession(object):
                     ):
                         self.portfolio_handler.calculate_signals(event)
                     elif event.type == EventType.SIGNAL:
-                        self.portfolio_handler.on_signal(event)
+                        self.portfolio_handler.on_signals(event)
                     elif event.type == EventType.TARGETWEIGHT:
-                        self.portfolio_handler.on_target_weight(event)
+                        self.portfolio_handler.on_target_weights(event)
                     elif event.type == EventType.ORDER:
                         self.execution_handler.execute_order(event)
                     elif event.type == EventType.FILL:

@@ -1,8 +1,7 @@
 
 import datetime
 
-from google_api import GoogleData
-
+from data.google_api import GoogleData
 from data.quandl_api import QuandlData
 from data.yahoo_api import YahooData
 from utils import fillnan
@@ -44,7 +43,7 @@ if __name__ == "__main__":
 
     s1 = StockData('quandl', ['AAPL', 'C', 'GS'])
     d1 = s1.get_data(start_date,end_date)
-    s2 = StockData('google', ['SPY'])
+    s2 = StockData('yahoo', ['SPY'])
     d2 = s2.get_data(start_date, end_date)
 
     d3 = d1.combine(d2, lambda a, b: fillnan(a, b))

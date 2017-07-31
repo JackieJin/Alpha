@@ -1,5 +1,5 @@
 import pandas as pd
-from Quandl import Quandl
+import quandl
 
 from data.base_api import AbstractData
 
@@ -32,10 +32,12 @@ class QuandlData(AbstractData):
 
     def get_data(self, ticker, start_date, end_date):
         if type(ticker) == list:
-            d_dict = dict(zip(ticker,[Quandl.get("%s/%s" % (vendor, t), trim_start=start_date, trim_end=end_date, authtoken=auth_tok) for t in ticker]))
+            print(" start to download ticker %s from quandl" % ticker)
+            d_dict = dict(zip(ticker,[quandl.get("%s/%s" % (vendor, t), trim_start=start_date, trim_end=end_date, authtoken=auth_tok) for t in ticker]))
             data = pd.Panel.from_dict(d_dict, orient= 'Minor')
+            print(" ticker %s is  downloaded from" % ticker)
         else:
-            data = Quandl.get("%s/%s" % (vendor, ticker), trim_start=start_date, trim_end=end_date, authtoken=auth_tok)
+            data = quandl.get("%s/%s" % (vendor, ticker), trim_start=start_date, trim_end=end_date, authtoken=auth_tok)
 
         data = self._rename_columns(data)
         if isinstance(data, pd.Panel):

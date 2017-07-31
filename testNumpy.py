@@ -12,9 +12,9 @@ def run ():
 
     dates = pd.date_range('20130101', periods=6)
     df = pd.DataFrame(np.random.randn(6, 4), index=dates, columns=list('ABCD'))
-    ts.plot()
-    df.plot()
-    plt.show()
+    # ts.plot()
+    # df.plot()
+    # plt.show()
 
     x = np.arange(100)
     y = 2 * x + np.random.randn(100)

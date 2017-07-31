@@ -1,8 +1,9 @@
 
-from position import Position
+from core.position import Position
+import pandas as pd
 
 class Portfolio(object):
-    def __init__(self, price_handler, cash):
+    def __init__(self, price_handler, cash, tickers):
         """
         On creation, the Portfolio object contains no
         positions and all values are "reset" to the initial
@@ -12,105 +13,131 @@ class Portfolio(object):
         positions (closed_pnl), as well as realised_pnl
         from currently open positions.
         """
-        self.price_handler = price_handler
-        self.init_cash = cash
-        self.equity = cash
-        self.cur_cash = cash
-        self.positions = {}
-        self.closed_positions = []
-        self.realised_pnl = 0
 
-    def _update_portfolio(self):
+        self.price_handler          = price_handler
+        self.init_cash              = cash
+        self.equity                 = cash
+        self.cur_cash               = cash
+        self.closed_positions       = []
+        self.realised_pnl           = 0
+        self.unrealised_pnl         = 0
+
+        self.portfolio_handler      = None
+        self.statistics             = pd.DataFrame(columns=['equity', 'cash', 'realised_pnl', 'unrealised_pnl'])
+        self.quantities             = pd.DataFrame(columns=tickers)
+        self.weights                = pd.DataFrame(columns=tickers)
+        self.positions              = {}
+        self._init_positions(tickers)
+
+    def initialize(self, portfolio_handler):
+        self.portfolio_handler = portfolio_handler
+
+    def update_portfolio(self):
         """
         Updates the value of all positions that are currently open.
         Value of closed positions is tallied as self.realised_pnl.
         """
+
+        # self.equity = self.realised_pnl
+        self.equity         = self.init_cash
+        self.realised_pnl   = 0
         self.unrealised_pnl = 0
-        self.equity = self.realised_pnl
-        self.equity += self.init_cash
 
         for ticker in self.positions:
             pt = self.positions[ticker]
             if self.price_handler.istick():
-                bid, ask = self.price_handler.get_best_bid_ask(ticker)
+                bid, ask    = self.price_handler.get_best_bid_ask(ticker)
             else:
                 close_price = self.price_handler.get_last_close(ticker)
-                bid = close_price
-                ask = close_price
+                bid         = close_price
+                ask         = close_price
+
             pt.update_market_value(bid, ask)
             self.unrealised_pnl += pt.unrealised_pnl
-            self.equity += (
-                pt.market_value - pt.cost_basis + pt.realised_pnl
-            )
+            self.realised_pnl   += pt.realised_pnl
+            self.equity         += pt.total_pnl
 
-    def _add_position(
-        self, action, ticker,
-        quantity, price, commission
-    ):
-        """
-        Adds a new Position object to the Portfolio. This
-        requires getting the best bid/ask price from the
-        price handler in order to calculate a reasonable
-        "market value".
+        self.statistics.loc[self.portfolio_handler.cur_time] =\
+            [self.equity, self.cur_cash, self.realised_pnl, self.unrealised_pnl]
+        self.quantities.loc[self.portfolio_handler.cur_time] = [self.positions[ticker].net for ticker in self.positions]
+        self.weights.loc[self.portfolio_handler.cur_time] = [self.get_current_weights(ticker) for ticker in self.positions]
 
-        Once the Position is added, the Portfolio values
-        are updated.
-        """
-        if ticker not in self.positions:
-            if self.price_handler.istick():
-                bid, ask = self.price_handler.get_best_bid_ask(ticker)
-            else:
-                close_price = self.price_handler.get_last_close(ticker)
-                bid = close_price
-                ask = close_price
-            position = Position(
-                action, ticker, quantity,
-                price, commission, bid, ask
-            )
-            self.positions[ticker] = position
-            self._update_portfolio()
-        else:
-            print(
-                "Ticker %s is already in the positions list. "
-                "Could not add a new position." % ticker
-            )
+    def _init_positions(self, tickers):
+        for ticker in tickers:
+            self.positions[ticker] = Position(ticker)
 
-    def _modify_position(
-        self, action, ticker,
-        quantity, price, commission
-    ):
-        """
-        Modifies a current Position object to the Portfolio.
-        This requires getting the best bid/ask price from the
-        price handler in order to calculate a reasonable
-        "market value".
-
-        Once the Position is modified, the Portfolio values
-        are updated.
-        """
-        if ticker in self.positions:
-            self.positions[ticker].transact_shares(
-                action, quantity, price, commission
-            )
-            if self.price_handler.istick():
-                bid, ask = self.price_handler.get_best_bid_ask(ticker)
-            else:
-                close_price = self.price_handler.get_last_close(ticker)
-                bid = close_price
-                ask = close_price
-            self.positions[ticker].update_market_value(bid, ask)
-
-            if self.positions[ticker].quantity == 0:
-                closed = self.positions.pop(ticker)
-                self.realised_pnl += closed.realised_pnl
-                self.closed_positions.append(closed)
-
-            self._update_portfolio()
-        else:
-            print(
-                "Ticker %s not in the current position list. "
-                "Could not modify a current position." % ticker
-            )
+    # def _add_position(
+    #     self, action, ticker,
+    #     quantity, price, commission
+    # ):
+    #     """
+    #     Adds a new Position object to the Portfolio. This
+    #     requires getting the best bid/ask price from the
+    #     price handler in order to calculate a reasonable
+    #     "market value".
+    #
+    #     Once the Position is added, the Portfolio values
+    #     are updated.
+    #     """
+    #     if ticker not in self.positions:
+    #         # if self.price_handler.istick():
+    #         #     bid, ask    = self.price_handler.get_best_bid_ask(ticker)
+    #         # else:
+    #         #     close_price = self.price_handler.get_last_close(ticker)
+    #         #     bid         = close_price
+    #         #     ask         = close_price
+    #         # position = Position(
+    #         #     ticker, action, quantity,
+    #         #     price, commission, bid, ask
+    #         # )
+    #         position = Position(
+    #             ticker, action, quantity,
+    #             price, commission
+    #         )
+    #         self.positions[ticker] = position
+    #         self.update_portfolio()
+    #     else:
+    #         print(
+    #             "Ticker %s is already in the positions list. "
+    #             "Could not add a new position." % ticker
+    #         )
+    #
+    # def _modify_position(
+    #     self, action, ticker,
+    #     quantity, price, commission
+    # ):
+    #     """
+    #     Modifies a current Position object to the Portfolio.
+    #     This requires getting the best bid/ask price from the
+    #     price handler in order to calculate a reasonable
+    #     "market value".
+    #
+    #     Once the Position is modified, the Portfolio values
+    #     are updated.
+    #     """
+    #     if ticker in self.positions:
+    #         self.positions[ticker].transact_shares(
+    #             action, quantity, price, commission
+    #         )
+    #         # if self.price_handler.istick():
+    #         #     bid, ask    = self.price_handler.get_best_bid_ask(ticker)
+    #         # else:
+    #         #     close_price = self.price_handler.get_last_close(ticker)
+    #         #     bid         = close_price
+    #         #     ask         = close_price
+    #         # self.positions[ticker].update_market_value(bid, ask)
+    #
+    #         # if self.positions[ticker].net == 0:
+    #         #     closed = self.positions.pop(ticker)
+    #         #     self.realised_pnl += closed.realised_pnl
+    #         #     self.closed_positions.append(closed)
+    #
+    #         self.update_portfolio()
+    #     else:
+    #         print(
+    #             "Ticker %s not in the current position list. "
+    #             "Could not modify a current position." % ticker
+    #         )
 
     def transact_position(
         self, action, ticker,
@@ -131,29 +158,33 @@ class Portfolio(object):
             self.cur_cash += ((quantity * price) - commission)
 
         if ticker not in self.positions:
-            self._add_position(
-                action, ticker, quantity,
+            # self._add_position(
+            #     action, ticker, quantity,
+            #     price, commission
+            # )
+            position = Position(
+                ticker, action, quantity,
                 price, commission
             )
+            self.positions[ticker] = position
         else:
-            self._modify_position(
-                action, ticker, quantity,
-                price, commission
+            # self._modify_position(
+            #     action, ticker, quantity,
+            #     price, commission
+            # )
+            self.positions[ticker].transact_shares(
+                action, quantity, price, commission
             )
+        self.update_portfolio()
 
-    def get_current_weight(self):
+    def get_current_weights(self, ticker=None):
+        self.update_portfolio()
         wt = {}
-        for ticker in self.positions:
-            pt = self.positions[ticker]
-            wt[ticker] = pt.market_value // self.cur_cash
-        return wt
-
-    def get_current_weight2(self, ticker):
-        if ticker not in self.positions:
-            current_weight = 0
+        if ticker is None:
+            for ticker in self.positions:
+                pt = self.positions[ticker]
+                wt[ticker] = pt.market_value / self.equity
         else:
-            current_quantity = self.positions[ticker].quantity
-            price = self.price_handler.tickers[ticker]["adj_close"]
-            equity = self.equity
-            current_weight = current_quantity * price / equity
-        return current_weight
+            pt = self.positions[ticker]
+            wt = pt.market_value / self.equity
+        return wt
