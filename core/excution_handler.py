@@ -41,7 +41,7 @@ class SimulationExecutionHandler(object):
             order_events.type = EventType.FILL
 
         for ticker in order_events.pool:
-            close_price = self.portfolio_handler.price_handler.tickers[ticker]['close']
+            close_price = self.portfolio_handler.get_last_close(ticker)
             order_events.pool[ticker] = self._convert_suggested_to_fill(order_events.pool[ticker], close_price)
         return order_events
 

@@ -39,6 +39,6 @@ class Strategies(AbstractStrategy):
 
     def calculate_signals(self, event):
         for strategy in self._lst_strategies:
-            event = strategy.calculate_signals(event)
+            event = strategy._calculate_signals(event)
 
 

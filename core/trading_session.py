@@ -127,7 +127,7 @@ class TradingSession(object):
                         event.type == EventType.BAR  or
                         event.type == EventType.TIME
                     ):
-                        self.portfolio_handler.calculate_signals(event)
+                        self.portfolio_handler._calculate_signals(event)
                     elif event.type == EventType.SIGNAL:
                         self.portfolio_handler.on_signals(event)
                     elif event.type == EventType.TARGETWEIGHT:
@@ -160,5 +160,5 @@ class TradingSession(object):
         return results
 
     def stream_next(self):
-        event = self.portfolio_handler.stream_next()
+        event = self.portfolio_handler._stream_next()
         self.portfolio_handler.events_queue.put(event)

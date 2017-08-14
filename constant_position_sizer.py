@@ -44,7 +44,7 @@ class ConstantPositionSizer(object):
 
 
     def _get_quantity_from_weight(self, ticker, weight):
-        price = self.portfolio_handler.price_handler.tickers[ticker]["close"]
+        price = self.portfolio_handler.get_last_close(ticker)
         equity = self.portfolio_handler.portfolio.equity
         dollar_weight = weight * equity
         if price is not None:
