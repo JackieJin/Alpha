@@ -3,7 +3,7 @@ from core.position import Position
 import pandas as pd
 
 class Portfolio(object):
-    def __init__(self, price_handler, cash, tickers):
+    def __init__(self, cash, tickers):
         """
         On creation, the Portfolio object contains no
         positions and all values are "reset" to the initial
@@ -14,7 +14,6 @@ class Portfolio(object):
         from currently open positions.
         """
 
-        self.price_handler          = price_handler
         self.init_cash              = cash
         self.equity                 = cash
         self.cur_cash               = cash
@@ -45,12 +44,12 @@ class Portfolio(object):
 
         for ticker in self.positions:
             pt = self.positions[ticker]
-            if self.price_handler.istick():
-                bid, ask    = self.price_handler.get_best_bid_ask(ticker)
-            else:
-                close_price = self.price_handler.get_last_close(ticker)
-                bid         = close_price
-                ask         = close_price
+            # if self.price_handler.istick():
+            #     bid, ask    = self.portfolio_handler.get_best_bid_ask(ticker)
+
+            close_price = self.portfolio_handler.get_last_close(ticker)
+            bid         = close_price
+            ask         = close_price
 
             pt.update_market_value(bid, ask)
             self.unrealised_pnl += pt.unrealised_pnl
@@ -178,7 +177,7 @@ class Portfolio(object):
         self.update_portfolio()
 
     def get_current_weights(self, ticker=None):
-        self.update_portfolio()
+        #self.update_portfolio()
         wt = {}
         if ticker is None:
             for ticker in self.positions:

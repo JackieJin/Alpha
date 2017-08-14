@@ -9,9 +9,9 @@ from core.excution_handler import SimulationExecutionHandler
 
 def run_q1():
 
-    initial_equity  = 10000.0
-    start_date      = datetime.datetime(2000, 1, 1)
-    end_date        = datetime.datetime(2014, 1, 1)
+    initial_equity  = 100000000.0
+    start_date      = datetime.datetime(1999, 1, 1)
+    end_date        = datetime.datetime.today()
 
     strategy        = ConstantMixStrategy({'AAPL': 0.4, 'C': 0.6})
     events_queue    = queue.Queue()
@@ -28,7 +28,8 @@ def run_q1():
                      risk_manager=None,
                      execution_handler = execution_handler,
                      strategy= strategy,
-                     statistics= None
+                     statistics= None,
+                     start_time = datetime.datetime(1999, 1, 4)
 
                      )
     port_handler.initialize_parameters()

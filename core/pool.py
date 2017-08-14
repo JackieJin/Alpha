@@ -18,12 +18,16 @@ class EventPool(object):
     def add(self, event):
         self.pool[event.ticker] = event
 
+class PriceEventPool(EventPool):
+    def __init__(self, time):
+        EventPool.__init__(self,time)
+        self.type = EventType.PRICE
+
 
 class WeightEventPool(EventPool):
     def __init__(self, time):
-        self.pool = {}
+        EventPool.__init__(self,time)
         self.type = EventType.TARGETWEIGHT
-        self.time = time
 
     def get_weights(self):
         weights = {key: value.weight for key, value in self.pool.items()}
@@ -37,9 +41,9 @@ class WeightEventPool(EventPool):
 
 class OrderEventPool(EventPool):
     def __init__(self, time):
-        self.pool = {}
+        EventPool.__init__(self, time)
         self.type = EventType.ORDER
-        self.time = time
+
 
     def print_orders(self):
         print("Time: %s " % self.time)

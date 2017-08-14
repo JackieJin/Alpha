@@ -16,8 +16,5 @@ class ConstantMixStrategy(object):
             twe.add_weights(self.tickers_and_weights)
             return twe
 
-    def save_signals(self, event):
-        self.portfolio_handler.events_queue.put(event)
-
     def _is_rebalance(self, time):
         return date_utils._end_of_month(time)
