@@ -33,8 +33,8 @@ class Position(object):
         self.total_bot      = 0
         self.total_sld      = 0
         self.total_commission = 0
-        self.net_total      = 0
-        self.net_incl_comm  = 0
+        # self.net_total      = 0
+        # self.net_incl_comm  = 0
 
         self.transact_shares(init_action, init_quantity, init_price, init_commission, bid, ask)
 
@@ -54,8 +54,8 @@ class Position(object):
         midpoint = (bid + ask) / 2
 
         self.market_value   = self.net * midpoint
-        self.unrealised_pnl = self.market_value - self.cost_basis
-        self.total_pnl      = self.unrealised_pnl + self.realised_pnl
+        self.total_pnl      = self.market_value - self.cost_basis
+        self.unrealised_pnl = self.total_pnl - self.realised_pnl
 
     def transact_shares(self, action, quantity, price, commission, bid=None, ask=None):
         """
@@ -81,8 +81,7 @@ class Position(object):
             self.avg_bot     = (self.avg_bot * self.buys + price * quantity) / (self.buys + quantity)
 
             if self.net < 0:
-                self.realised_pnl += min(quantity, abs(self.net)) * (self.avg_price - price) - commission  # Adjust realised PNL
-                commission        = 0      # assume commission is all in realised_pnl
+                self.realised_pnl += min(quantity, abs(self.net)) * (self.avg_price - price) - commission  # assume commission is all in realised_pnl
             # Increasing long position
             self.avg_price  = (self.avg_price * self.net + price * quantity + commission) / (self.net + quantity)
             self.buys       += quantity
@@ -93,23 +92,26 @@ class Position(object):
             self.avg_sld    = (self.avg_sld * self.sells + price * quantity) / (self.sells + quantity)
 
             if self.net > 0:
-                self.realised_pnl += min(quantity, abs(self.net)) * (price - self.avg_price) - commission  # Adjust realised PNL
-                commission        = 0  # assume commission is all in realised_pnl
+                self.realised_pnl += min(quantity, abs(self.net)) * (price - self.avg_price) - commission  # assume commission is all in realised_pnl
 
-            self.avg_price  = (self.avg_price * self.net - price * quantity - commission) / (self.net - quantity)
+            self.avg_price  = (self.avg_price * self.net - price * quantity + commission) / (self.net - quantity)
             self.sells      += quantity
             self.total_sld  = self.sells * self.avg_sld
 
         # Adjust net values, including commissions
         self.net            = self.buys - self.sells
-        self.net_total      = self.total_sld - self.total_bot
-        self.net_incl_comm  = self.net_total - self.total_commission
+        # self.net_total      = self.total_sld - self.total_bot
+        # self.net_incl_comm  = self.net_total - self.total_commission
         self.cost_basis     = self.net * self.avg_price
 
         self.update_market_value(bid, ask)
 
 if __name__ == "__main__":
-    p = Position('AAPL', 'BOT', 150, 100, 5, 150, 150)
+    p = Position('AAPL', 'BOT', 100, 100, 5, 100, 100)
     print(vars(p))
-    p.transact_shares('SLD', 200, 105, 5)
+    p.transact_shares('BOT', 200, 105, 5)
+    print(vars(p))
+    p.transact_shares('BOT', 100, 110, 5)
+    print(vars(p))
+    p.transact_shares('SLD', 200, 100, 5)
     print(vars(p))

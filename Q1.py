@@ -9,7 +9,7 @@ from core.excution_handler import SimulationExecutionHandler
 
 def run_q1():
 
-    initial_equity  = 100000000.0
+    initial_equity  = 1000000.0
     start_date      = datetime.datetime(1999, 1, 1)
     end_date        = datetime.datetime.today()
 
