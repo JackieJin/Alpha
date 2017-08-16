@@ -55,3 +55,5 @@ Temporary Items
 .idea/Alpha.iml
 .idea/misc.xml
 .idea/workspace.xml
+*.pyc
+.idea/workspace.xml
