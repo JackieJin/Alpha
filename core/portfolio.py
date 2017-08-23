@@ -15,14 +15,14 @@ class Portfolio(object):
         """
 
         self.init_cash              = cash
-        self.equity                 = cash
+        self.total_mkt_value        = cash
         self.cur_cash               = cash
         self.closed_positions       = []
         self.realised_pnl           = 0
         self.unrealised_pnl         = 0
 
         self.portfolio_handler      = None
-        self.statistics             = pd.DataFrame(columns=['equity', 'cash', 'realised_pnl', 'unrealised_pnl'])
+        self.statistics             = pd.DataFrame(columns=['total_mkt_value', 'cash'])
         self.quantities             = pd.DataFrame(columns=tickers)
         self.weights                = pd.DataFrame(columns=tickers)
         self.positions              = {}
@@ -38,7 +38,7 @@ class Portfolio(object):
         """
 
         # self.equity = self.realised_pnl
-        self.equity         = self.init_cash
+        self.total_mkt_value         = self.init_cash
         self.realised_pnl   = 0
         self.unrealised_pnl = 0
 
@@ -52,12 +52,12 @@ class Portfolio(object):
             ask         = close_price
 
             pt.update_market_value(bid, ask)
-            self.unrealised_pnl += pt.unrealised_pnl
-            self.realised_pnl   += pt.realised_pnl
-            self.equity         += pt.total_pnl
+            # self.unrealised_pnl += pt.unrealised_pnl
+            # self.realised_pnl   += pt.realised_pnl
+            self.total_mkt_value         += pt.total_pnl
 
         self.statistics.loc[self.portfolio_handler.cur_time] =\
-            [self.equity, self.cur_cash, self.realised_pnl, self.unrealised_pnl]
+            [self.total_mkt_value, self.cur_cash]
         self.quantities.loc[self.portfolio_handler.cur_time] = [self.positions[ticker].net for ticker in self.positions]
         self.weights.loc[self.portfolio_handler.cur_time] = [self.get_current_weights(ticker) for ticker in self.positions]
 
@@ -182,8 +182,8 @@ class Portfolio(object):
         if ticker is None:
             for ticker in self.positions:
                 pt = self.positions[ticker]
-                wt[ticker] = pt.market_value / self.equity
+                wt[ticker] = pt.market_value / self.total_mkt_value
         else:
             pt = self.positions[ticker]
-            wt = pt.market_value / self.equity
+            wt = pt.market_value / self.total_mkt_value
         return wt

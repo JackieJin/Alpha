@@ -2,7 +2,7 @@ import pandas as pd
 from pandas_datareader import data
 
 from data.base_api import AbstractData
-from utils import fillnan
+from math_utils import fillnan
 
 class GoogleData(AbstractData):
 

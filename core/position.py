@@ -16,10 +16,8 @@ class Position(object):
         """
         
         self.ticker         = ticker
-        self.realised_pnl   = 0
         self.market_value   = 0
         self.cost_basis     = 0
-        self.unrealised_pnl = 0
         self.total_pnl      = 0
 
         self.buys           = 0
@@ -33,8 +31,7 @@ class Position(object):
         self.total_bot      = 0
         self.total_sld      = 0
         self.total_commission = 0
-        # self.net_total      = 0
-        # self.net_incl_comm  = 0
+
 
         self.transact_shares(init_action, init_quantity, init_price, init_commission, bid, ask)
 
@@ -79,30 +76,21 @@ class Position(object):
         # Adjust total bought and sold
         if action == "BOT":
             self.avg_bot     = (self.avg_bot * self.buys + price * quantity) / (self.buys + quantity)
-
             if self.net < 0:
                 self.realised_pnl += min(quantity, abs(self.net)) * (self.avg_price - price) - commission  # assume commission is all in realised_pnl
-            # Increasing long position
-            self.avg_price  = (self.avg_price * self.net + price * quantity + commission) / (self.net + quantity)
             self.buys       += quantity
             self.total_bot  = self.buys * self.avg_bot
 
         # action == "SLD"
         else:
             self.avg_sld    = (self.avg_sld * self.sells + price * quantity) / (self.sells + quantity)
-
             if self.net > 0:
                 self.realised_pnl += min(quantity, abs(self.net)) * (price - self.avg_price) - commission  # assume commission is all in realised_pnl
-
-            self.avg_price  = (self.avg_price * self.net - price * quantity + commission) / (self.net - quantity)
             self.sells      += quantity
             self.total_sld  = self.sells * self.avg_sld
 
         # Adjust net values, including commissions
         self.net            = self.buys - self.sells
-        # self.net_total      = self.total_sld - self.total_bot
-        # self.net_incl_comm  = self.net_total - self.total_commission
-        self.cost_basis     = self.net * self.avg_price
 
         self.update_market_value(bid, ask)
 

@@ -4,7 +4,7 @@ import datetime
 from data.google_api import GoogleData
 from data.quandl_api import QuandlData
 from data.yahoo_api import YahooData
-from utils import fillnan
+from math_utils import fillnan
 
 
 class DataFactory:

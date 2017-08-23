@@ -44,9 +44,9 @@ class ConstantPositionSizer(object):
 
 
     def _get_quantity_from_weight(self, ticker, weight):
-        price = self.portfolio_handler.get_last_close(ticker)
-        equity = self.portfolio_handler.portfolio.equity
-        dollar_weight = weight * equity
+        price           = self.portfolio_handler.get_last_close(ticker)
+        total_mkt_value = self.portfolio_handler.portfolio.total_mkt_value
+        dollar_weight   = weight * total_mkt_value
         if price is not None:
             weighted_quantity = int(floor(dollar_weight / price))
         else:
