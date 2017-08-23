@@ -19,6 +19,8 @@ class Position(object):
         self.market_value   = 0
         self.cost_basis     = 0
         self.total_pnl      = 0
+        self.realised_pnl   = 0
+        self.unrealised_pnl = 0
 
         self.buys           = 0
         self.sells          = 0
@@ -49,7 +51,6 @@ class Position(object):
         and loss of any transactions.
         """
         midpoint = (bid + ask) / 2
-
         self.market_value   = self.net * midpoint
         self.total_pnl      = self.market_value - self.cost_basis
         self.unrealised_pnl = self.total_pnl - self.realised_pnl
@@ -80,6 +81,7 @@ class Position(object):
                 self.realised_pnl += min(quantity, abs(self.net)) * (self.avg_price - price) - commission  # assume commission is all in realised_pnl
             self.buys       += quantity
             self.total_bot  = self.buys * self.avg_bot
+            self.cost_basis += (price * quantity + commission)
 
         # action == "SLD"
         else:
@@ -88,9 +90,11 @@ class Position(object):
                 self.realised_pnl += min(quantity, abs(self.net)) * (price - self.avg_price) - commission  # assume commission is all in realised_pnl
             self.sells      += quantity
             self.total_sld  = self.sells * self.avg_sld
+            self.cost_basis -= (price * quantity - commission)
 
         # Adjust net values, including commissions
         self.net            = self.buys - self.sells
+        self.avg_price      = self.cost_basis/self.net
 
         self.update_market_value(bid, ask)
 
