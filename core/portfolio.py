@@ -1,9 +1,10 @@
 
 from core.position import Position
 import pandas as pd
+import numpy as np
 
 class Portfolio(object):
-    def __init__(self, cash, tickers):
+    def __init__(self, cash):
         """
         On creation, the Portfolio object contains no
         positions and all values are "reset" to the initial
@@ -23,10 +24,10 @@ class Portfolio(object):
 
         self.portfolio_handler      = None
         self.statistics             = pd.DataFrame(columns=['total_mkt_value', 'cash'])
-        self.quantities             = pd.DataFrame(columns=tickers)
-        self.weights                = pd.DataFrame(columns=tickers)
+        self.quantities             = pd.DataFrame()
+        self.weights                = pd.DataFrame()
         self.positions              = {}
-        self._init_positions(tickers)
+        # self._init_positions(tickers)
 
     def initialize(self, portfolio_handler):
         self.portfolio_handler = portfolio_handler
@@ -58,12 +59,20 @@ class Portfolio(object):
 
         self.statistics.loc[self.portfolio_handler.cur_time] =\
             [self.total_mkt_value, self.cur_cash]
-        self.quantities.loc[self.portfolio_handler.cur_time] = [self.positions[ticker].net for ticker in self.positions]
-        self.weights.loc[self.portfolio_handler.cur_time] = [self.get_current_weights(ticker) for ticker in self.positions]
 
-    def _init_positions(self, tickers):
-        for ticker in tickers:
-            self.positions[ticker] = Position(ticker)
+        idx = pd.MultiIndex.from_product([[self.portfolio_handler.cur_time], list(self.positions.keys())],names = ['date', 'asset'] )
+        qt  = [self.positions[ticker].net for ticker in self.positions]
+        wt  = [self.get_current_weights(ticker) for ticker in self.positions]
+
+        self.weights    = self.weights.append(pd.DataFrame(np.array([wt]).transpose(), index = idx, columns = 'weight'))
+        self.quantities = self.quantities.append(pd.DataFrame(np.array([qt]).transpose(), index=idx, columns='weight'))
+
+        # self.quantities.loc[self.portfolio_handler.cur_time] = [self.positions[ticker].net for ticker in self.positions]
+        # self.weights.loc[self.portfolio_handler.cur_time] = [self.get_current_weights(ticker) for ticker in self.positions]
+
+    # def _init_positions(self, tickers):
+    #     for ticker in tickers:
+    #         self.positions[ticker] = Position(ticker)
 
     # def _add_position(
     #     self, action, ticker,

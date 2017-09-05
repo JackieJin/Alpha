@@ -8,7 +8,7 @@ from core.portfolio import Portfolio
 class PortfolioHandler(object):
 
     def __init__(
-        self, tickers, initial_cash, events_queue,
+        self, initial_cash, events_queue,
         price_handler, position_sizer,
         risk_manager, execution_handler,
         strategy, statistics, start_time
@@ -20,7 +20,7 @@ class PortfolioHandler(object):
         self.position_sizer     = position_sizer
         self.risk_manager       = risk_manager
         self.execution_handler  = execution_handler
-        self.portfolio          = Portfolio(initial_cash, tickers)
+        self.portfolio          = Portfolio(initial_cash)
         self.strategy           = strategy
         self.statistics         = statistics
         self.cur_time           = start_time

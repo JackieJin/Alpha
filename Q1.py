@@ -21,7 +21,7 @@ def run_q1():
     init_tickers    = ['AAPL', 'C']
     ph              = PriceHandler(data_symbols, init_tickers, start_date, end_date)
     execution_handler   = SimulationExecutionHandler()
-    port_handler    = PortfolioHandler(init_tickers, initial_equity,
+    port_handler    = PortfolioHandler(initial_equity,
                      events_queue,
                      price_handler=ph,
                      position_sizer=position_sizer,
